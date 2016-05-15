@@ -20,14 +20,14 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
 
-    @IBOutlet weak var display: UILabel!    // implicitly unwrapped optional
+    @IBOutlet private weak var display: UILabel!    // implicitly unwrapped optional
     
     // all properties except optionals must be initialized
     // all optionals are initialized with 'not set'
     //var userIsInTheMiddleOfTyping: Bool = false
-    var userIsInTheMiddleOfTyping = false   // type inference
+    private var userIsInTheMiddleOfTyping = false   // type inference
     
-    @IBAction func touchDigit(sender: UIButton) {
+    @IBAction private func touchDigit(sender: UIButton) {
         let digit = sender.currentTitle!
         print("touch \(digit) digit")
         
@@ -40,12 +40,27 @@ class ViewController: UIViewController {
         }
         userIsInTheMiddleOfTyping = true
     }
+    
+    private var displayValue: Double {  //computed property
+        get {
+            return Double(display.text!)!
+        }
+        set {
+            display.text = String(newValue) //special value (: Double)
+        }
+    }
+    
+    //private var brain: CalculatorBrain = CalculatorBrain()
+    private var brain = CalculatorBrain()
 
-    @IBAction func performOperation(sender: UIButton) {
+    @IBAction private func performOperation(sender: UIButton) {
         userIsInTheMiddleOfTyping = false
         if let mathematicalSymbol = sender.currentTitle {   //mathematicalSymbol is defined only in scope
             if (mathematicalSymbol == "π") {
-                display.text = String(M_PI) //convert to string
+                //display.text = String(M_PI) //convert to string
+                displayValue = M_PI
+            } else if mathematicalSymbol == "√" {
+                displayValue = sqrt(displayValue)
             }
         }
         // else fatal error: unexpectedly found nil while unwrapping an Optional value
