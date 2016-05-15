@@ -54,16 +54,17 @@ class ViewController: UIViewController {
     private var brain = CalculatorBrain()
 
     @IBAction private func performOperation(sender: UIButton) {
-        userIsInTheMiddleOfTyping = false
+        if userIsInTheMiddleOfTyping {
+            brain.setOperand(displayValue)
+            userIsInTheMiddleOfTyping = false
+        }
         if let mathematicalSymbol = sender.currentTitle {   //mathematicalSymbol is defined only in scope
-            if (mathematicalSymbol == "π") {
-                //display.text = String(M_PI) //convert to string
-                displayValue = M_PI
-            } else if mathematicalSymbol == "√" {
-                displayValue = sqrt(displayValue)
-            }
+            brain.performOperand(mathematicalSymbol)
+            displayValue = brain.result
         }
         // else fatal error: unexpectedly found nil while unwrapping an Optional value
+        
+        
     }
 }
 
