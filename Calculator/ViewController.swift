@@ -59,7 +59,7 @@ class ViewController: UIViewController {
             userIsInTheMiddleOfTyping = false
         }
         if let mathematicalSymbol = sender.currentTitle {   //mathematicalSymbol is defined only in scope
-            brain.performOperand(mathematicalSymbol)
+            brain.performOperation(mathematicalSymbol)
             displayValue = brain.result
         }
         // else fatal error: unexpectedly found nil while unwrapping an Optional value
