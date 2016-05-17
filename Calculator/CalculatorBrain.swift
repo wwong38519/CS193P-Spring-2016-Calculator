@@ -9,10 +9,6 @@
 import Foundation
 // Model shoule never import UIKit because Model is UI independent
 
-func multiply(op1: Double, op2: Double) -> Double {
-    return op1 * op2;
-}
-
 class CalculatorBrain {
     
     private var accumulator = 0.0
@@ -21,12 +17,22 @@ class CalculatorBrain {
         accumulator = operand
     }
     
-    var operations: Dictionary<String,Operation> = [
+    private var operations: Dictionary<String,Operation> = [
         "π": Operation.Constant(M_PI),
         "e": Operation.Constant(M_E),
+        "±": Operation.UnaryOperation({ -$0 }),
         "√": Operation.UnaryOperation(sqrt),
         "cos": Operation.UnaryOperation(cos),
-        "×": Operation.BinaryOperation(multiply),
+//        "×": Operation.BinaryOperation({ (op1: Double, op2: Double) -> Double in
+//            return op1 * op2;
+//        }),
+//        "×": Operation.BinaryOperation({ (op1, op2) in return op1 * op2 }),
+//        "×": Operation.BinaryOperation({ ($0, $1) in return $0 * $1 }),
+//        "×": Operation.BinaryOperation({ return $0 * $1 }),
+        "×": Operation.BinaryOperation({ $0 * $1 }),
+        "÷": Operation.BinaryOperation({ $0 / $1 }),
+        "+": Operation.BinaryOperation({ $0 + $1 }),
+        "−": Operation.BinaryOperation({ $0 - $1 }),
         "=": Operation.Equals
     ]
     
@@ -37,7 +43,7 @@ class CalculatorBrain {
     }
     */
     
-    enum Operation {
+    private enum Operation {
         // cannot have vars, no inheritance, pass by value (struct)
         case Constant(Double)
         case UnaryOperation((Double) -> (Double))
@@ -70,7 +76,7 @@ class CalculatorBrain {
     
     private var pending: PendingBinaryOperationInfo?
     
-    struct PendingBinaryOperationInfo {
+    private struct PendingBinaryOperationInfo {
         var binaryFunction: (Double, Double) -> Double
         var firstOperand: Double
     }
