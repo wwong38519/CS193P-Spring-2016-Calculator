@@ -13,7 +13,26 @@ class CalculatorBrain {
     
     private var accumulator = 0.0
     
+    private var ops = [String]()
+    private var lastOpIndex = 0
+    
+    var description: String {
+        get {
+            return ops.joinWithSeparator("")
+        }
+    }
+    
+    var isPartialResult: Bool {
+        get {
+            return pending != nil
+        }
+    }
+    
     func setOperand(operand: Double) {
+        if (!isPartialResult) {
+            ops.removeAll()
+        }
+        ops.append(String(operand))
         accumulator = operand
     }
     
@@ -23,6 +42,8 @@ class CalculatorBrain {
         "±": Operation.UnaryOperation({ -$0 }),
         "√": Operation.UnaryOperation(sqrt),
         "cos": Operation.UnaryOperation(cos),
+        "sin": Operation.UnaryOperation(cos),
+        "tan": Operation.UnaryOperation(cos),
 //        "×": Operation.BinaryOperation({ (op1: Double, op2: Double) -> Double in
 //            return op1 * op2;
 //        }),
@@ -55,10 +76,21 @@ class CalculatorBrain {
         if let operation = operations[symbol] {   //return optional as key may not exist
             switch operation {  //dot: inferred type = Operation
             case .Constant(let value):
+                ops.append(symbol)
                 accumulator = value
             case .UnaryOperation(let function):
+                if (!isPartialResult) {
+                    lastOpIndex = 0
+                    ops.insert(symbol+"(", atIndex: 0)
+                    ops.append(")")
+                } else {
+                    ops.insert(symbol+"(", atIndex: lastOpIndex+1)
+                    ops.append(")")
+                }
                 accumulator = function(accumulator)
             case .BinaryOperation(let function):
+                ops.append(symbol)
+                lastOpIndex = ops.count-1
                 executePendingBinaryOperation()
                 pending = PendingBinaryOperationInfo(binaryFunction: function, firstOperand: accumulator)
             case .Equals:
@@ -90,5 +122,12 @@ class CalculatorBrain {
         get {
             return accumulator
         }
+    }
+    
+    func clear() {
+        pending = nil
+        accumulator = 0.0
+        ops.removeAll()
+        lastOpIndex = 0
     }
 }

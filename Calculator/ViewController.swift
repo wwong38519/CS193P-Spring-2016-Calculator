@@ -21,6 +21,7 @@ class ViewController: UIViewController {
     }
 
     @IBOutlet private weak var display: UILabel!    // implicitly unwrapped optional
+    @IBOutlet weak var history: UILabel!
     
     // all properties except optionals must be initialized
     // all optionals are initialized with 'not set'
@@ -33,8 +34,9 @@ class ViewController: UIViewController {
         
         if userIsInTheMiddleOfTyping {
             let textCurrentlyInDisplay = display.text!
-            display.text = nil // unset optional
-            display.text = textCurrentlyInDisplay + digit  // set associate value for an optional
+            //display.text = nil // unset optional
+            //display.text = textCurrentlyInDisplay + digit  // set associate value for an optional
+            display.text = (digit == "." && textCurrentlyInDisplay.containsString(digit) ? textCurrentlyInDisplay : textCurrentlyInDisplay + digit)  // set associate value for an optional
         } else {
             display.text = digit
         }
@@ -47,6 +49,7 @@ class ViewController: UIViewController {
         }
         set {
             display.text = String(newValue) //special value (: Double)
+            history.text = brain.description.isEmpty ? " " : (brain.description + (brain.isPartialResult ? "..." : "="))
         }
     }
     
@@ -65,6 +68,11 @@ class ViewController: UIViewController {
         // else fatal error: unexpectedly found nil while unwrapping an Optional value
         
         
+    }
+    
+    @IBAction func clear(sender: UIButton) {
+        brain.clear()
+        displayValue = 0
     }
 }
 
