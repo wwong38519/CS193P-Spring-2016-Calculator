@@ -32,7 +32,7 @@ class CalculatorBrain {
         if (!isPartialResult) {
             ops.removeAll()
         }
-        ops.append(String(operand))
+        ops.append(formatter.stringFromNumber(operand)!)
         accumulator = operand
     }
     
@@ -41,6 +41,7 @@ class CalculatorBrain {
         "e": Operation.Constant(M_E),
         "±": Operation.UnaryOperation({ -$0 }),
         "√": Operation.UnaryOperation(sqrt),
+        "x2": Operation.UnaryOperation({pow($0, 2)}),
         "cos": Operation.UnaryOperation(cos),
         "sin": Operation.UnaryOperation(cos),
         "tan": Operation.UnaryOperation(cos),
@@ -54,7 +55,8 @@ class CalculatorBrain {
         "÷": Operation.BinaryOperation({ $0 / $1 }),
         "+": Operation.BinaryOperation({ $0 + $1 }),
         "−": Operation.BinaryOperation({ $0 - $1 }),
-        "=": Operation.Equals
+        "=": Operation.Equals,
+        "R": Operation.Nullary(drand48)
     ]
     
     /*
@@ -67,6 +69,7 @@ class CalculatorBrain {
     private enum Operation {
         // cannot have vars, no inheritance, pass by value (struct)
         case Constant(Double)
+        case Nullary(() -> (Double))
         case UnaryOperation((Double) -> (Double))
         case BinaryOperation((Double, Double) -> (Double))
         case Equals
@@ -78,6 +81,9 @@ class CalculatorBrain {
             case .Constant(let value):
                 ops.append(symbol)
                 accumulator = value
+            case .Nullary(let function):
+                ops.append(symbol)
+                accumulator = function()
             case .UnaryOperation(let function):
                 if (!isPartialResult) {
                     lastOpIndex = 0
@@ -96,6 +102,7 @@ class CalculatorBrain {
             case .Equals:
                 executePendingBinaryOperation()
             }
+            
         }
     }
     
@@ -130,4 +137,12 @@ class CalculatorBrain {
         ops.removeAll()
         lastOpIndex = 0
     }
+    
+    let formatter: NSNumberFormatter = {
+        var f = NSNumberFormatter()
+        f.minimumIntegerDigits = 1
+        f.maximumFractionDigits = 6
+        f.minimumFractionDigits = 0
+        return f
+    }()
 }

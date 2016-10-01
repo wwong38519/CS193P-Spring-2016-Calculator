@@ -43,13 +43,18 @@ class ViewController: UIViewController {
         userIsInTheMiddleOfTyping = true
     }
     
-    private var displayValue: Double {  //computed property
+    private var displayValue: Double? {  //computed property
         get {
             return Double(display.text!)!
         }
         set {
-            display.text = String(newValue) //special value (: Double)
-            history.text = brain.description.isEmpty ? " " : (brain.description + (brain.isPartialResult ? "..." : "="))
+            if let value = newValue {
+                display.text = brain.formatter.stringFromNumber(value) //special value (: Double)
+                history.text = brain.description.isEmpty ? " " : (brain.description + (brain.isPartialResult ? "..." : "="))
+            } else {
+                display.text = "0"
+                history.text = " "
+            }
         }
     }
     
@@ -58,7 +63,7 @@ class ViewController: UIViewController {
 
     @IBAction private func performOperation(sender: UIButton) {
         if userIsInTheMiddleOfTyping {
-            brain.setOperand(displayValue)
+            brain.setOperand(displayValue!)
             userIsInTheMiddleOfTyping = false
         }
         if let mathematicalSymbol = sender.currentTitle {   //mathematicalSymbol is defined only in scope
@@ -66,13 +71,21 @@ class ViewController: UIViewController {
             displayValue = brain.result
         }
         // else fatal error: unexpectedly found nil while unwrapping an Optional value
-        
-        
     }
     
-    @IBAction func clear(sender: UIButton) {
+    @IBAction private func clear(sender: UIButton) {
         brain.clear()
-        displayValue = 0
+        displayValue = nil
+    }
+    
+    @IBAction private func backspace(sender: UIButton) {
+        if userIsInTheMiddleOfTyping {
+            display.text!.removeAtIndex(display.text!.endIndex.predecessor())
+        }
+        if display.text!.isEmpty {
+            userIsInTheMiddleOfTyping = false
+            displayValue = brain.result
+        }
     }
 }
 
