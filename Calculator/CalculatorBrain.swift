@@ -41,7 +41,6 @@ class CalculatorBrain {
         "e": Operation.Constant(M_E),
         "±": Operation.UnaryOperation({ -$0 }),
         "√": Operation.UnaryOperation(sqrt),
-        "x2": Operation.UnaryOperation({pow($0, 2)}),
         "cos": Operation.UnaryOperation(cos),
         "sin": Operation.UnaryOperation(cos),
         "tan": Operation.UnaryOperation(cos),
@@ -55,6 +54,7 @@ class CalculatorBrain {
         "÷": Operation.BinaryOperation({ $0 / $1 }),
         "+": Operation.BinaryOperation({ $0 + $1 }),
         "−": Operation.BinaryOperation({ $0 - $1 }),
+        "^": Operation.BinaryOperation({pow($0, $1)}),
         "=": Operation.Equals,
         "R": Operation.Nullary(drand48)
     ]
