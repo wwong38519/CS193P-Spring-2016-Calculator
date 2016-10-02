@@ -12,9 +12,11 @@ import Foundation
 class CalculatorBrain {
     
     private var accumulator = 0.0
+    private var internalProgram = [AnyObject]()
     
     func setOperand(operand: Double) {
         accumulator = operand
+        internalProgram.append(operand)
     }
     
     private var operations: Dictionary<String,Operation> = [
@@ -52,6 +54,7 @@ class CalculatorBrain {
     }
     
     func performOperation(symbol: String) {
+        internalProgram.append(symbol)
         if let operation = operations[symbol] {   //return optional as key may not exist
             switch operation {  //dot: inferred type = Operation
             case .Constant(let value):
@@ -85,6 +88,33 @@ class CalculatorBrain {
     // classes - pass by reference (heap)
     // free initializer of classes - none of the var
     // free initializer of structs - all of the var
+    
+    typealias PropertyList = AnyObject
+    
+    var program: PropertyList {
+        get {
+            // array is value type, hence it's a copy that returned
+            return internalProgram
+        }
+        set {
+            clear()
+            if let arrayOfOps = newValue as? [AnyObject] {
+                for op in arrayOfOps {
+                    if let operand = op as? Double {
+                        setOperand(operand)
+                    } else if let operation = op as? String {
+                        performOperation(operation)
+                    }
+                }
+            }
+        }
+    }
+    
+    func clear() {
+        accumulator = 0.0
+        pending = nil
+        internalProgram.removeAll()
+    }
     
     var result: Double {    //readonly
         get {
