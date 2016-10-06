@@ -13,16 +13,104 @@ class CalculatorBrain {
     
     private var accumulator = 0.0
     private var internalProgram = [AnyObject]()
-    
+    var formatter: NSNumberFormatter?
+
     private var ops = [String]()
-    private var lastOpIndex = 0
     
     var description: String {
+        set {
+//            print("set", ops.description, internalProgram.description, description, newValue)
+            if newValue.isEmpty {
+                ops.removeAll()
+            } else {
+                let symbol = newValue.stringByReplacingOccurrencesOfString(description, withString: "")
+                ops.append(symbol)
+            }
+        }
         get {
-            return ops.joinWithSeparator("")
+//            print("get", ops.description, internalProgram.description)
+            var output = ""
+            var lastOpIndex = output.startIndex
+            if !ops.isEmpty {
+                var currentPartial = false
+                for op in ops {
+                    if let operation = operations[op] {
+                        switch operation {
+                        case .UnaryOperation:
+                            if (!currentPartial) {
+                                lastOpIndex = output.startIndex
+                                output.replaceRange(lastOpIndex..<output.endIndex, with: op+"("+output+")")
+                            } else {
+                                let lastOperand = output.substringFromIndex(lastOpIndex)
+                                output.replaceRange(lastOpIndex..<output.endIndex, with: op+"("+lastOperand+")")
+                            }
+                        case .BinaryOperation:
+                            output.appendContentsOf(op)
+                            lastOpIndex = output.endIndex
+                            currentPartial = true
+                        case .Equals:
+                            if currentPartial {
+                                currentPartial = false
+                            }
+                        default:
+                            output.appendContentsOf(op)
+                        }
+                    } else if variableValues[op] != nil {
+                        output.appendContentsOf(op)
+                    } else {
+                        if !currentPartial {
+                            lastOpIndex = output.startIndex
+                            output = ""
+                        }
+                        output.appendContentsOf(op)
+                    }
+                }
+            }
+            return output
         }
     }
-    
+
+/*    private var lastOpIndex = "".startIndex
+
+    var description: String = "" {
+        didSet {
+            let update = description
+            var output = oldValue
+            if update.isEmpty {
+                lastOpIndex = output.startIndex
+                output = " "
+            } else {
+                let symbol = update.stringByReplacingOccurrencesOfString(output, withString: "")
+                if let operation = operations[symbol] {
+                    switch operation {
+                    case .UnaryOperation:
+                        if (!isPartialResult) {
+                            lastOpIndex = output.startIndex
+                            output.replaceRange(lastOpIndex..<output.endIndex, with: symbol+"("+output+")")
+                        } else {
+                            let lastOperand = output.substringFromIndex(lastOpIndex)
+                            output.replaceRange(lastOpIndex..<output.endIndex, with: symbol+"("+lastOperand+")")
+                        }
+                    case .BinaryOperation:
+                        output.appendContentsOf(symbol)
+                        lastOpIndex = output.endIndex
+                    default:
+                        output.appendContentsOf(symbol)
+                    }
+                } else if variableValues[symbol] != nil {
+                    output.appendContentsOf(symbol)
+                } else {
+                    if !isPartialResult {
+                        lastOpIndex = output.startIndex
+                        output = " "
+                    }
+                    output.appendContentsOf(symbol)
+                }
+            }
+            description = output
+        }
+    }
+*/
     var isPartialResult: Bool {
         get {
             return pending != nil
@@ -30,12 +118,9 @@ class CalculatorBrain {
     }
     
     func setOperand(operand: Double) {
-        if (!isPartialResult) {
-            ops.removeAll()
-        }
-        ops.append(formatter.stringFromNumber(operand)!)
         accumulator = operand
         internalProgram.append(operand)
+        ops.append(formatter == nil ? operand.description : formatter!.stringFromNumber(operand)!)
     }
     
     private var operations: Dictionary<String,Operation> = [
@@ -79,27 +164,16 @@ class CalculatorBrain {
     
     func performOperation(symbol: String) {
         internalProgram.append(symbol)
+        ops.append(symbol)
         if let operation = operations[symbol] {   //return optional as key may not exist
             switch operation {  //dot: inferred type = Operation
             case .Constant(let value):
-                ops.append(symbol)
                 accumulator = value
             case .Nullary(let function):
-                ops.append(symbol)
                 accumulator = function()
             case .UnaryOperation(let function):
-                if (!isPartialResult) {
-                    lastOpIndex = 0
-                    ops.insert(symbol+"(", atIndex: 0)
-                    ops.append(")")
-                } else {
-                    ops.insert(symbol+"(", atIndex: lastOpIndex+1)
-                    ops.append(")")
-                }
                 accumulator = function(accumulator)
             case .BinaryOperation(let function):
-                ops.append(symbol)
-                lastOpIndex = ops.count-1
                 executePendingBinaryOperation()
                 pending = PendingBinaryOperationInfo(binaryFunction: function, firstOperand: accumulator)
             case .Equals:
@@ -142,7 +216,11 @@ class CalculatorBrain {
                     if let operand = op as? Double {
                         setOperand(operand)
                     } else if let operation = op as? String {
-                        performOperation(operation)
+                        if operations[operation] != nil {
+                            performOperation(operation)
+                        } else {
+                            setOperand(operation)
+                        }
                     }
                 }
             }
@@ -158,16 +236,38 @@ class CalculatorBrain {
     func clear() {
         pending = nil
         accumulator = 0.0
-        ops.removeAll()
-        lastOpIndex = 0
+        description = ""
         internalProgram.removeAll()
     }
     
-    let formatter: NSNumberFormatter = {
-        var f = NSNumberFormatter()
-        f.minimumIntegerDigits = 1
-        f.maximumFractionDigits = 6
-        f.minimumFractionDigits = 0
-        return f
-    }()
+    var variableValues = [String: Double]() {
+        didSet {
+            program = internalProgram
+        }
+    }
+    
+    func setOperand(variableName: String) {
+        if let value = variableValues[variableName] {
+            setOperand(value)
+            ops.removeLast()
+            ops.append(variableName)
+            internalProgram.removeLast()
+            internalProgram.append(variableName)
+        } else {
+            accumulator = 0.0
+            internalProgram.append(variableName)
+            ops.append(variableName)
+        }
+    }
+    
+    func undo() {
+        if !ops.isEmpty {
+            ops.removeLast()
+        }
+        if !internalProgram.isEmpty {
+            internalProgram.removeLast()
+            program = internalProgram
+        }
+    }
+    
 }
