@@ -33,7 +33,6 @@ class ViewController: UIViewController {
     @IBAction private func touchDigit(sender: UIButton) {
         let digit = sender.currentTitle!
         print("touch \(digit) digit")
-        
         if userIsInTheMiddleOfTyping {
             let textCurrentlyInDisplay = display.text!
             //display.text = nil // unset optional
@@ -46,20 +45,30 @@ class ViewController: UIViewController {
         updateHistoryLabel()
     }
     
+    private var error: Bool?
+
     private var displayValue: Double? {  //computed property
         get {
-            return Double(display.text!)!
+            if let text = display.text, value = Double(text) {
+                return value
+            } else {
+                return nil
+            }
         }
         set {
-            if let value = newValue {
-                display.text = formatter.stringFromNumber(value) //special value (: Double)
+            if let isError = error where isError {
+                display.text = "ERROR"
             } else {
-                display.text = "0"
+                if let value = newValue {
+                    display.text = formatter.stringFromNumber(value) //special value (: Double)
+                } else {
+                    display.text = "0"
+                }
             }
             updateHistoryLabel()
         }
     }
-    
+
     private func updateHistoryLabel() {
         if !brain.description.isEmpty {
             history.text = brain.isPartialResult ? brain.description + "..." : brain.description
@@ -73,12 +82,13 @@ class ViewController: UIViewController {
     
     
     @IBAction private func performOperation(sender: UIButton) {
-        if userIsInTheMiddleOfTyping {
-            brain.setOperand(displayValue!)
+        if let operand = displayValue where userIsInTheMiddleOfTyping {
+            brain.setOperand(operand)
             userIsInTheMiddleOfTyping = false
         }
         if let mathematicalSymbol = sender.currentTitle {   //mathematicalSymbol is defined only in scope
             brain.performOperation(mathematicalSymbol)
+            error = brain.error
             displayValue = brain.result
         }
         // else fatal error: unexpectedly found nil while unwrapping an Optional value
@@ -93,13 +103,18 @@ class ViewController: UIViewController {
     }
     
     @IBAction private func backspace() {
-        if !display.text!.isEmpty && userIsInTheMiddleOfTyping {
-            display.text!.removeAtIndex(display.text!.endIndex.predecessor())
-            updateHistoryLabel()
-        }
         if display.text!.isEmpty {
             userIsInTheMiddleOfTyping = false
+            error = brain.error
             displayValue = brain.result
+        } else {
+            if let isError = error where !isError && userIsInTheMiddleOfTyping {
+                display.text!.removeAtIndex(display.text!.endIndex.predecessor())
+                if display.text!.isEmpty {
+                    display.text = " "
+                }
+                updateHistoryLabel()
+            }
         }
     }
     
@@ -108,8 +123,8 @@ class ViewController: UIViewController {
             backspace()
         } else {
             brain.undo()
+            updateHistoryLabel()
         }
-        updateHistoryLabel()
     }
     
     var savedProgram: CalculatorBrain.PropertyList?
@@ -121,6 +136,7 @@ class ViewController: UIViewController {
     @IBAction private func restore() {
         if savedProgram != nil {
             brain.program = savedProgram!
+            error = brain.error
             displayValue = brain.result
         }
     }
@@ -140,6 +156,7 @@ class ViewController: UIViewController {
         if let variableName = sender.currentTitle?.substringFromIndex((sender.currentTitle?.startIndex.successor())!) {
             userIsInTheMiddleOfTyping = false
             brain.variableValues[variableName] = displayValue
+            error = brain.error
             displayValue = brain.result
         }
     }

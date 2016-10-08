@@ -16,7 +16,7 @@
                         <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillProportionally" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="3lg-yF-279">
@@ -336,10 +336,10 @@
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="3lg-yF-279" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="5tC-f7-FLX"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="3lg-yF-279" secondAttribute="trailing" id="TTp-aF-Z9h"/>
-                            <constraint firstItem="3lg-yF-279" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="10" id="aU8-s1-tAs"/>
-                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="3lg-yF-279" secondAttribute="bottom" constant="10" id="ehp-lg-t1s"/>
+                            <constraint firstItem="3lg-yF-279" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="10" identifier="top" id="5sy-Ut-WRU"/>
+                            <constraint firstItem="3lg-yF-279" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" identifier="trailing" id="7cU-ZZ-Rz4"/>
+                            <constraint firstItem="3lg-yF-279" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" identifier="leading" id="BlF-Lf-E5c"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="3lg-yF-279" secondAttribute="bottom" constant="10" identifier="bottom" id="WMH-OC-gSj"/>
                         </constraints>
                     </view>
                     <connections>

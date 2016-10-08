@@ -28,7 +28,7 @@ class CalculatorBrain {
             }
         }
         get {
-//            print("get", ops.description, internalProgram.description)
+            print("get", ops.description, internalProgram.description, isPartialResult)
             var output = ""
             var lastOpIndex = output.startIndex
             if !ops.isEmpty {
@@ -39,12 +39,18 @@ class CalculatorBrain {
                         case .UnaryOperation:
                             if (!currentPartial) {
                                 lastOpIndex = output.startIndex
+                                if output.isEmpty {
+                                    output = "0"
+                                }
                                 output.replaceRange(lastOpIndex..<output.endIndex, with: op+"("+output+")")
                             } else {
                                 let lastOperand = output.substringFromIndex(lastOpIndex)
                                 output.replaceRange(lastOpIndex..<output.endIndex, with: op+"("+lastOperand+")")
                             }
                         case .BinaryOperation:
+                            if output.isEmpty {
+                                output = "0"
+                            }
                             output.appendContentsOf(op)
                             lastOpIndex = output.endIndex
                             currentPartial = true
@@ -179,7 +185,6 @@ class CalculatorBrain {
             case .Equals:
                 executePendingBinaryOperation()
             }
-            
         }
     }
     
@@ -226,13 +231,18 @@ class CalculatorBrain {
             }
         }
     }
-    
+
     var result: Double {    //readonly
         get {
             return accumulator
         }
     }
-    
+    var error: Bool {
+        get {
+            return accumulator.isNaN || accumulator.isInfinite
+        }
+    }
+
     func clear() {
         pending = nil
         accumulator = 0.0
@@ -261,9 +271,6 @@ class CalculatorBrain {
     }
     
     func undo() {
-        if !ops.isEmpty {
-            ops.removeLast()
-        }
         if !internalProgram.isEmpty {
             internalProgram.removeLast()
             program = internalProgram
