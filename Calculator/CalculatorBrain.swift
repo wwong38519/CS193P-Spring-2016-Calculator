@@ -135,8 +135,8 @@ class CalculatorBrain {
         "±": Operation.UnaryOperation({ -$0 }),
         "√": Operation.UnaryOperation(sqrt),
         "cos": Operation.UnaryOperation(cos),
-        "sin": Operation.UnaryOperation(cos),
-        "tan": Operation.UnaryOperation(cos),
+        "sin": Operation.UnaryOperation(sin),
+        "tan": Operation.UnaryOperation(tan),
 //        "×": Operation.BinaryOperation({ (op1: Double, op2: Double) -> Double in
 //            return op1 * op2;
 //        }),

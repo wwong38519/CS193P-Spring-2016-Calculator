@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class CalculatorViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -168,5 +168,44 @@ class ViewController: UIViewController {
         f.minimumFractionDigits = 0
         return f
     }()
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        let destinationvc = segue.destinationViewController
+        if let graphvc = destinationvc.contentViewController as? GraphViewController {
+            if let identifier = segue.identifier {
+                switch identifier {
+                case "Show Graph":
+                    if !brain.isPartialResult {
+                        graphvc.navigationItem.title = brain.description
+                        /*
+                        pass a function (takes a Double, returns a Double) as a closure to GraphViewController
+                        type declaration (x: Double) -> Double? is inferred from graphvc.function if it is set in one line
+                        */
+//                        let function = { [weak weakSelf = self] (x: Double) -> Double? in
+//                            weakSelf?.brain.variableValues["M"] = x
+//                            return weakSelf?.brain.result
+//                        }
+//                        graphvc.function = function
+                        graphvc.function = { [weak weakSelf = self] x in
+                            weakSelf?.brain.variableValues["M"] = x
+                            return weakSelf?.brain.result
+                        }
+                    }
+                default:
+                    break
+                }
+            }
+        }
+    }
+}
+
+extension UIViewController {
+    var contentViewController: UIViewController? {
+        if let navcon = self as? UINavigationController {
+            return navcon.visibleViewController
+        } else {
+            return self
+        }
+    }
 }
 
