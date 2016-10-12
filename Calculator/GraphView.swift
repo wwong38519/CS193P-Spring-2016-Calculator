@@ -41,6 +41,15 @@ class GraphView: UIView {
         }
     }
     
+    var originWrtCenter: CGPoint {
+        get {
+            return CGPoint(x: origin.x - bounds.midX, y: origin.y - bounds.midY)
+        }
+        set {
+            origin = CGPoint(x: newValue.x + bounds.midX, y: newValue.y + bounds.midY)
+        }
+    }
+    
     var function: ((x: Double) -> Double?)? { didSet { setNeedsDisplay() } }
     
     private var _origin: CGPoint?
@@ -75,7 +84,8 @@ class GraphView: UIView {
                 translate computed y-value back to y-coordindate of the view
             */
             var previous: CGPoint?
-            for xCoordinate in 0...Int(bounds.maxX) {
+            for i in 0...Int(bounds.maxX * contentScaleFactor) {
+                let xCoordinate = Double(i) / Double(contentScaleFactor)
                 let xValue = (Double(xCoordinate) - Double(origin.x)) / Double(scale)
                 if let yValue = f(x: xValue) {
                     let yCoordinate = -(yValue * Double(scale) - Double(origin.y))
@@ -109,8 +119,7 @@ class GraphView: UIView {
     func moveGraph(recognizer: UIPanGestureRecognizer) {
         switch recognizer.state {
         case .Changed,.Ended:
-            origin = CGPoint(x: origin.x + recognizer.translationInView(self).x, y: origin.y + recognizer.translationInView(self).y)
-            recognizer.setTranslation(CGPoint(x:0, y:0), inView: self)
+            origin = recognizer.locationInView(self)
         default:
             break
         }

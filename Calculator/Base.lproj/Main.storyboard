@@ -370,6 +370,7 @@
                     <navigationItem key="navigationItem" id="CtX-Q0-gi6"/>
                     <connections>
                         <outlet property="display" destination="cWj-Yq-qT9" id="Fdc-cE-Qj9"/>
+                        <outlet property="graphButton" destination="dV2-1g-Txt" id="GG4-4x-UYE"/>
                         <outlet property="history" destination="QYV-KU-n2c" id="xhd-y6-KCl"/>
                     </connections>
                 </viewController>
@@ -448,6 +449,6 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="aNH-Sq-DSi"/>
+        <segue reference="5ut-9N-ZPb"/>
     </inferredMetricsTieBreakers>
 </document>

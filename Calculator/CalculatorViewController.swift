@@ -10,6 +10,10 @@ import UIKit
 
 class CalculatorViewController: UIViewController {
 
+    private struct Storyboard {
+        static let ShowGraphSegueIdentifier = "Show Graph"
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
@@ -24,6 +28,8 @@ class CalculatorViewController: UIViewController {
     @IBOutlet private weak var display: UILabel!    // implicitly unwrapped optional
 
     @IBOutlet weak var history: UILabel!
+    
+    @IBOutlet weak var graphButton: UIButton!
     
     // all properties except optionals must be initialized
     // all optionals are initialized with 'not set'
@@ -56,6 +62,7 @@ class CalculatorViewController: UIViewController {
             }
         }
         set {
+            error = newValue == nil ? false : brain.error
             if let isError = error where isError {
                 display.text = "ERROR"
             } else {
@@ -66,6 +73,7 @@ class CalculatorViewController: UIViewController {
                 }
             }
             updateHistoryLabel()
+            graphButton?.enabled = !brain.isPartialResult
         }
     }
 
@@ -88,7 +96,6 @@ class CalculatorViewController: UIViewController {
         }
         if let mathematicalSymbol = sender.currentTitle {   //mathematicalSymbol is defined only in scope
             brain.performOperation(mathematicalSymbol)
-            error = brain.error
             displayValue = brain.result
         }
         // else fatal error: unexpectedly found nil while unwrapping an Optional value
@@ -105,7 +112,6 @@ class CalculatorViewController: UIViewController {
     @IBAction private func backspace() {
         if display.text!.isEmpty {
             userIsInTheMiddleOfTyping = false
-            error = brain.error
             displayValue = brain.result
         } else {
             if let isError = error where !isError && userIsInTheMiddleOfTyping {
@@ -136,7 +142,6 @@ class CalculatorViewController: UIViewController {
     @IBAction private func restore() {
         if savedProgram != nil {
             brain.program = savedProgram!
-            error = brain.error
             displayValue = brain.result
         }
     }
@@ -156,7 +161,6 @@ class CalculatorViewController: UIViewController {
         if let variableName = sender.currentTitle?.substringFromIndex((sender.currentTitle?.startIndex.successor())!) {
             userIsInTheMiddleOfTyping = false
             brain.variableValues[variableName] = displayValue
-            error = brain.error
             displayValue = brain.result
         }
     }
@@ -174,7 +178,7 @@ class CalculatorViewController: UIViewController {
         if let graphvc = destinationvc.contentViewController as? GraphViewController {
             if let identifier = segue.identifier {
                 switch identifier {
-                case "Show Graph":
+                case Storyboard.ShowGraphSegueIdentifier:
                     if !brain.isPartialResult {
                         graphvc.navigationItem.title = brain.description
                         /*

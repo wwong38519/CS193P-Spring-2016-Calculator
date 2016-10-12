@@ -51,9 +51,46 @@ class GraphViewController: UIViewController {
         }
     }
     
+    private var origin: CGPoint?
+
+    private let defaults = NSUserDefaults.standardUserDefaults()
+    private struct Keys {
+        static let Function = "GraphViewController.Function"
+        static let Origin = "GraphViewController.Origin"
+        static let Scale = "GraphViewController.Scale"
+    }
+    
 //    called from didSet of View / Model such that the view will definitely be updated when either of them is set first
     private func updateUI() {
         graphView?.function = function
     }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        if let storedOrigin = defaults.arrayForKey(Keys.Origin), x = storedOrigin[0] as? Double, y = storedOrigin[1] as? Double {
+            graphView?.originWrtCenter = CGPoint(x: x, y: y)
+        }
+        if let storedScale = defaults.objectForKey(Keys.Scale) as? CGFloat {
+            graphView?.scale = storedScale
+        }
+    }
 
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        origin = graphView?.originWrtCenter
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        if origin != nil {
+            graphView?.originWrtCenter = origin!
+        }
+    }
+    
+    override func viewWillDisappear(animated: Bool) {
+        super.viewWillDisappear(animated)
+        defaults.setObject([graphView.originWrtCenter.x, graphView.originWrtCenter.y], forKey: Keys.Origin)
+        defaults.setObject(graphView.scale, forKey: Keys.Scale)
+    }
+    
 }
