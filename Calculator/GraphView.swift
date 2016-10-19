@@ -106,11 +106,35 @@ class GraphView: UIView {
         return round(coordinate * contentScaleFactor) / contentScaleFactor
     }
     
+    // goal is to minimize drawGraph()
+    
     func changePointsPerUnit(recognizer: UIPinchGestureRecognizer) {
         switch recognizer.state {
         case .Changed,.Ended:
             scale *= recognizer.scale
             recognizer.scale = 1.0
+        default:
+            break
+        }
+        switch recognizer.state {
+        case .Began:
+            snapshot = self.snapshotViewAfterScreenUpdates(false)
+            self.superview?.addSubview(snapshot!)
+            self.hidden = true
+        case .Changed:
+            snapshot?.bounds.size.height *= recognizer.scale
+            snapshot?.bounds.size.width *= recognizer.scale
+            // pin the axes by calculating offset from center (originWrtCenter) by scale
+            // less the scale (zoom in), closer the snapshot offset to the self offset
+            let scale = snapshot!.bounds.height / self.bounds.height
+            let c = self.center, p = self.originWrtCenter
+            snapshot?.center = CGPoint(x: c.x + p.x * (1-scale), y: c.y + p.y * (1-scale))
+            recognizer.scale = 1.0
+        case .Ended:
+            scale *= snapshot!.bounds.height / self.bounds.height
+            self.hidden = false
+            snapshot?.removeFromSuperview()
+            snapshot = nil
         default:
             break
         }
@@ -120,6 +144,28 @@ class GraphView: UIView {
         switch recognizer.state {
         case .Changed,.Ended:
             origin = recognizer.locationInView(self)
+        default:
+            break
+        }
+        switch recognizer.state {
+        case .Began:
+            snapshot = self.snapshotViewAfterScreenUpdates(false)
+            self.superview?.addSubview(snapshot!)
+            self.hidden = true
+        case .Changed:
+            let p = recognizer.translationInView(self)
+            snapshot?.center.x += p.x
+            snapshot?.center.y += p.y
+            recognizer.setTranslation(CGPointZero, inView: self)
+        case .Ended:
+            // offset from self.center to snspshot.center = offset from self.bounds.origin (0,0) to self.origin (with respect to (0,0) )
+            var p = self.origin
+            p.x += snapshot!.center.x - self.center.x
+            p.y += snapshot!.center.y - self.center.y
+            origin = p
+            self.hidden = false
+            snapshot?.removeFromSuperview()
+            snapshot = nil
         default:
             break
         }
@@ -133,4 +179,6 @@ class GraphView: UIView {
             break
         }
     }
+    
+    private var snapshot: UIView?
 }

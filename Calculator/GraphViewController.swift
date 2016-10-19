@@ -55,7 +55,6 @@ class GraphViewController: UIViewController {
 
     private let defaults = NSUserDefaults.standardUserDefaults()
     private struct Keys {
-        static let Function = "GraphViewController.Function"
         static let Origin = "GraphViewController.Origin"
         static let Scale = "GraphViewController.Scale"
     }
